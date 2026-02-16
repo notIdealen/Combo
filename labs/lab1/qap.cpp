@@ -3,7 +3,7 @@
 // расчитать размер матрицы, если м>15, то запускать функцию расчета времени?
 #include <iostream>
 #include <vector>
-#include <algorithm>
+// #include <algorithm>
 #include <limits>
 #include <chrono>
 #include "rmff.cpp"

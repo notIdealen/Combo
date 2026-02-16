@@ -1,5 +1,3 @@
-//
-//g++
 #include <vector>
 #include <cstdlib>
 #include <iostream>
@@ -13,19 +11,6 @@
 using namespace std;
 
 using matrix = std::vector<std::vector<int>>;
-
-// void printMatrix(matrix& m)
-// {
-//     std::cout << '[' << std::endl;
-//     for (std::vector<int> v : m)
-//     {
-//         std::cout << "  [ ";
-//         for (int e : v)
-//             e < 10 ? std::cout << ' ' << e << ' ' : std::cout << e << ' ';
-//         std::cout << "]\n";
-//     }
-//     std::cout << ']' << std::endl;
-// }
 
 std::string trimWhitespace(const std::string& str) {
     auto start = str.find_first_not_of(" \t\r\n");
@@ -51,7 +36,6 @@ matrix readMatrixFromFile(const std::string& filename) {
         std::stringstream ss(trimmed);
         std::string token;
         
-        // Разбиваем строку по запятым
         while (std::getline(ss, token, ',')) {
             std::string cleaned = trimWhitespace(token);
             size_t pos;
