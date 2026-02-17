@@ -10,12 +10,11 @@ using namespace std;
 
 // bool nextOccurence(vector<size_t>& occurrence){}
 
-void readData(vector<int>& w, vector<int>& p)
+void readData(vector<int>& w, vector<int>& p, const string& path)
 {
     string line = "";
-    ifstream file("data/wp.txt");
-    bool flag = true;
     int a,b;
+    ifstream file(path);
     while (getline(file, line))
     {
         istringstream iss(line);
@@ -28,12 +27,12 @@ void readData(vector<int>& w, vector<int>& p)
 
 int main(int argc, char const *argv[])
 {
-    vector<int> weightes(0);//28
-    vector<int> prices  (0);//24
-    readData(weightes, prices);
-    int size = weightes.size();
+    vector<int> w8s   (0);
+    vector<int> prices(0);
+    readData(w8s, prices, argv[1]);
+    int size = w8s.size();
     vector<int> combinations{size + 1};
-    int maxW = 16;
+    int maxW = stoi(argv[2]);
     int currW = 0;
     int currP = 0;
     int bestP = 0;
@@ -55,10 +54,9 @@ int main(int argc, char const *argv[])
             {
                 if (combinations[k] == 1)
                 {
-                    currW += weightes[k];
-                    if (weightes[k] > maxW || currW > maxW)
+                    currW += w8s[k];
+                    if (w8s[k] > maxW || currW > maxW)
                     {
-                        // cout << "Weight overflow\n";
                         currP = 0;
                         break;
                     }
@@ -71,6 +69,6 @@ int main(int argc, char const *argv[])
         }
     }
 
-    cout << "BEST PRICE: " << bestP << endl;
+    cout << bestP << endl;
     return 0;
 }
