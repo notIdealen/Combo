@@ -1,5 +1,4 @@
 @echo off
-@REM setlocal enabledelayedexpansion
 set PROG=qap.exe
 
 echo ------------------------------------------
@@ -34,10 +33,6 @@ for /f "delims=" %%i in ('%PROG% .\data\qm10x10.txt .\data\cm10x10.txt 2^>nul') 
 )
 set "RESULT=%RESULT: =%"
 if "%RESULT%"=="%EXPECTED%" (echo [OK] valid) else (goto err)
-echo ------------------------------------------
-echo calculate matrix 1x1 
-echo ------------------------------------------
-echo calculate matrix 2x2 
 echo ------------------------------------------
 echo calculate matrix 20x20
 %PROG% 20

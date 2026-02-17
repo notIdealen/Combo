@@ -1,9 +1,7 @@
 //g++ qap.cpp -o qap.exe
-//решить для n=10, n=15 Оценить время для n=20, n=50
-// расчитать размер матрицы, если м>15, то запускать функцию расчета времени?
+// #include <algorithm>
 #include <iostream>
 #include <vector>
-// #include <algorithm>
 #include <limits>
 #include <chrono>
 #include "rmff.cpp"
@@ -16,8 +14,10 @@ using matrix = vector<vector<int>>;
 unsigned int calculateR(matrix& Q, matrix& C, vector<int>& idxOrder, int n)
 {
     unsigned int R = 0;
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
+    for (int i = 0; i < n; ++i) 
+    {
+        for (int j = 0; j < n; ++j) 
+        {
             R += Q[i][j] * C[idxOrder[i]][idxOrder[j]];
         }
     }
@@ -56,7 +56,8 @@ int main(int argc, char const *argv[])
 
     auto start = chrono::high_resolution_clock::now();
 
-    do {
+    do 
+    {
         unsigned int R = calculateR(Q, C, idxOrder, n);
         Rmin = min(R, Rmin);
     } while (next_permutation(idxOrder.begin(), idxOrder.end()));
