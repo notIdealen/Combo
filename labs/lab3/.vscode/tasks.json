@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "c++ build",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                // "-g",//флаг отладки
+                "${workspaceFolder}/main.cpp",
+                "${workspaceFolder}/includes/Graph.cpp",
+                "-o", 
+                "${workspaceFolder}/graph",
+                "-I", "D:/_OOP/labs/catch"
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
+        }
+    ]
+}
