@@ -19,7 +19,14 @@ public:
     void ConvertAMToEL();
     void ConvertELToAM();
     void CreateAdjacencyListFromEdgeList();
+    void FindSCC();
+    void DFS(std::vector<std::vector<int>>& graph, int v, int component);
     void PrintSCC();
+    
+    AdjacencyMatrix GetAdjacencyMatrix();
+    EdgeList GetEdgeList();
+    std::vector<std::vector<int>> GetAdjacencyList();
+    std::vector<int> GetVisited();
 
 private:
     int m_vertexesNumber = 0;
@@ -29,8 +36,4 @@ private:
     std::vector<std::vector<int>> m_graph{};
     std::vector<std::vector<int>> m_rgraph{};
     std::vector<int> m_visited, m_order;
-
-    void FindSCC();
-    void RDFS(int v);
-    void DFS(int v, int component);
 };

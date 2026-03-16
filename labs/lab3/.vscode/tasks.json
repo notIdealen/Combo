@@ -18,6 +18,24 @@
                 "kind": "build", 
                 "isDefault": true,
             }
+        },
+        {
+            "label": "TESTS",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                // "-g",//флаг отладки
+                "${workspaceFolder}/graph_tests.cpp",
+                "${workspaceFolder}/includes/Graph.cpp",
+                "-o", 
+                "${workspaceFolder}/gtests",
+                "-I", "D:/_OOP/labs/catch"
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
         }
     ]
 }

@@ -33,14 +33,28 @@ void Graph::SetEdgeListFromFile(const std::string path)
     string line;
     int x, y;
     stringstream ss;
+    getline(inF, line);
+
+    try {
+        m_vertexesNumber = std::stoi(line);
+        if (m_vertexesNumber <= 0) {
+            cerr << "INVALIN vertexes number" << endl;
+            return;
+        }
+    } catch (const std::invalid_argument& e) {
+        cerr << "INVALID number: " << line << endl;
+        return;
+    } catch (const std::out_of_range& e) {
+        std::cerr << "OVERLIMIT number of vertexes" << std::endl;
+        return;
+    }
+
     while (getline(inF, line))
     {
         ss << line;
         if (ss >> x >> y)
         {
             m_edgeList.push_back({x, y});
-            if (m_vertexesNumber < x || m_vertexesNumber < y)
-                m_vertexesNumber = x < y ? y : x;
         }
         else
         {
@@ -123,23 +137,12 @@ void Graph::CreateAdjacencyListFromEdgeList()
     }
 }
 
-void Graph::RDFS(int v)
-{
-    m_visited[v] = 1;
-    for (int to : m_rgraph[v])
-        if (!m_visited[to])
-            RDFS(to);
-
-    m_order.push_back(v);
-}
-
-void Graph::DFS(int v, int component)
+void Graph::DFS(vector<vector<int>>& graph, int v, int component)
 {
     m_visited[v] = component;
-    for (int to : m_graph[v])
+    for (int to : graph[v])
         if (!m_visited[to])
-            DFS(to, component);
-    
+            DFS(graph, to, component);
     m_order.push_back(v);
 }
 
@@ -148,15 +151,16 @@ void Graph::FindSCC()
     m_visited.assign(m_graph.size(), 0);
     for (int v = 0; v < m_graph.size(); ++v)
         if (!m_visited[v])
-            RDFS(v);
+            DFS(m_rgraph, v, 1);
     
     reverse(m_order.begin(), m_order.end());
 
     m_visited.assign(m_graph.size(), 0);
     int counter = 0;
+
     for (int v : m_order)
         if (!m_visited[v])
-            DFS(v, ++counter);
+            DFS(m_graph, v, ++counter);
 }
 
 void Graph::PrintSCC()
@@ -178,4 +182,24 @@ void Graph::PrintSCC()
         }
         cout << endl;
     }
+}
+
+AdjacencyMatrix Graph::GetAdjacencyMatrix()
+{
+    return m_adjacencyMatrix;
+}
+
+EdgeList Graph::GetEdgeList()
+{
+    return m_edgeList;
+};
+
+vector<vector<int>> Graph::GetAdjacencyList()
+{
+    return m_graph;
+};
+
+std::vector<int> Graph::GetVisited()
+{
+    return m_visited;
 }
