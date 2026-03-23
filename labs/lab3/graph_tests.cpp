@@ -110,3 +110,15 @@ TEST_CASE("find SCC")
     vector<int> t = {7, 7, 8, 7, 8, 7, 4, 6, 5, 6, 6, 3, 2, 1};
     REQUIRE(visited == t);
 }
+
+TEST_CASE("find SCC simple")
+{
+    const string path = "data/edgeList_test9.txt";
+    Graph g;
+    g.SetEdgeListFromFile(path);
+    g.CreateAdjacencyListFromEdgeList();
+    g.FindSCC();
+    auto visited = g.GetVisited();
+    vector<int> t = {1, 1, 1, 1};
+    REQUIRE(visited == t);
+}
