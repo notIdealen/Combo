@@ -1,0 +1,71 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "BUILD",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "${workspaceFolder}/main.cpp",
+                "-o", 
+                "${workspaceFolder}/START.exe",
+                "-I", "C:\\SFML302\\include",
+                "-L", "C:\\SFML302\\lib",
+                "-lsfml-graphics",
+                "-lsfml-window",
+                "-lsfml-system"
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
+        },
+        {
+            "label": "DEBUG",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/dbg.cpp",
+                // "${workspaceFolder}/includes/Controller.cpp",
+                "-o", 
+                "${workspaceFolder}/dbg",
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
+        },
+        {
+            "label": "TEST",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "${workspaceFolder}/tests.cpp",
+                "${workspaceFolder}/includes/Controller.cpp",
+                "${workspaceFolder}/includes/CCircle.cpp",
+                "${workspaceFolder}/includes/CTriangle.cpp",
+                "${workspaceFolder}/includes/CRectangle.cpp",
+                "${workspaceFolder}/includes/CLineSegment.cpp",
+                "${workspaceFolder}/includes/ShapeFactory.cpp",
+                "${workspaceFolder}/includes/CCanvas.cpp",
+                "${workspaceFolder}/includes/MockCanvas.cpp",
+                "-o", 
+                "${workspaceFolder}/TESTS.exe",
+                "-I", "D:/_OOP/labs/catch",
+                "-I", "C:\\SFML302\\include",
+                "-L", "C:\\SFML302\\lib",
+                "-lsfml-graphics",
+                "-lsfml-window",
+                "-lsfml-system"
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
+        }
+    ]
+}

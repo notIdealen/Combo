@@ -1,0 +1,55 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "BUILD",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "${workspaceFolder}/main.cpp",
+                // "${workspaceFolder}/includes/Calculator.cpp",
+                "-o", 
+                "${workspaceFolder}/START",
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
+        },
+        {
+            "label": "DEBUG",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/dbg.cpp",
+                // "${workspaceFolder}/includes/InputParser.cpp",
+                "-o", 
+                "${workspaceFolder}/DBG",
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
+        },
+        {
+            "label": "TEST",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "${workspaceFolder}/calc_tests.cpp",
+                // "${workspaceFolder}/includes/Calculator.cpp",
+                "-o", 
+                "${workspaceFolder}/TESTS",
+                "-I", "D:/_OOP/labs/catch"
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
+        }
+    ]
+}

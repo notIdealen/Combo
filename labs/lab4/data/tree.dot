@@ -1,0 +1,13 @@
+graph SteinerTree {
+    layout=neato; mode="major"; splines=line;
+    node [fontname="Arial", fontsize=10];
+
+    S1 [pos="2.0000,6.8465!", label="S1", shape=doublecircle, style=filled, fillcolor="#3498db"];
+    T2 [pos="4.0000,8.0000!", label="T2", shape=circle, style=filled, fillcolor="#e74c3c"];
+    T3 [pos="0.0000,8.0000!", label="T3", shape=circle, style=filled, fillcolor="#e74c3c"];
+    T0 [pos="0.0000,0.0000!", label="T0", shape=circle, style=filled, fillcolor="#e74c3c"];
+    T1 [pos="4.0000,0.0000!", label="T1", shape=circle, style=filled, fillcolor="#e74c3c"];
+
+    S1 -- T2 [penwidth=2];
+    S1 -- T3 [penwidth=2];
+}

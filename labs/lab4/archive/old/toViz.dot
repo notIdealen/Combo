@@ -1,0 +1,17 @@
+graph SteinerTree {
+    layout=neato; overlap=false; splines=line;
+    S207 [pos="4,2!", label="S207", shape=doublecircle, style=filled, fillcolor="#3498db"];
+    T2 [pos="4,2!", label="T2", shape=circle, style=filled, fillcolor="#e74c3c"];
+    T4 [pos="8,1!", label="T4", shape=circle, style=filled, fillcolor="#e74c3c"];
+    S208 [pos="3.1547,1.1547!", label="S208", shape=doublecircle, style=filled, fillcolor="#3498db"];
+    T1 [pos="4,0!", label="T1", shape=circle, style=filled, fillcolor="#e74c3c"];
+    S227 [pos="0.57735,1!", label="S227", shape=doublecircle, style=filled, fillcolor="#3498db"];
+    T0 [pos="0,0!", label="T0", shape=circle, style=filled, fillcolor="#e74c3c"];
+    T3 [pos="0,2!", label="T3", shape=circle, style=filled, fillcolor="#e74c3c"];
+    S207 -- T2 [penwidth=2];
+    S207 -- T4 [penwidth=2];
+    S207 -- S208 [penwidth=2];
+    S208 -- T1 [penwidth=2];
+    S227 -- T0 [penwidth=2];
+    S227 -- T3 [penwidth=2];
+}
