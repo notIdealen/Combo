@@ -136,7 +136,7 @@ SteinerGraph FindFPoint(Terminal& A, Terminal& B, Terminal& C)
 }
 SteinerPoint FindSteinerPoint(Terminal& A, Terminal& B, Terminal& F, Terminal& X) 
 {
-    SteinerPoint S;
+    SteinerPoint S{};
 
     if (AngleAt(A, B, F) >= ANGLE_120) 
     {
@@ -242,20 +242,35 @@ SteinerGraph MelzakRecursive(vector<Terminal>& t)
                     auto temp = MelzakRecursive(newTerminals);
 
                     SteinerPoint F;//F для X
-                    for (const auto& f : temp.sPoints)
+                    for (auto& f : temp.sPoints)
                     {
                         for (size_t i = 0; i < f.edgesIds.size(); ++i)
-                            if (f.edgesIds[i] == X.id) { F = f; break; }
+                            if (f.edgesIds[i] == X.id) 
+                            { 
+                                F = f; 
+                                auto it = f.edgesIds.begin();
+                                f.edgesIds.erase(it + i);
+                                break; 
+                            }
                     }
 
                     //получить точку штейнера
                     auto S = FindSteinerPoint(A, B, F, X);
-                    // double currLength = Dist()
+                    if (S.id == "" || temp.length <= 0 || S.edgesLength == 0) continue;
+
+                    double currLength = S.edgesLength + F.edgesLength - Dist(F, X);
+
+                    if (currLength < bestLength)
+                    {
+                        bestLength = currLength;
+                        bestGraph = temp;
+                        bestGraph.sPoints.push_back(S);
+                    }
 
                     // cout << "TempLen: " << temp.length << ", bl(" << bestLength << ")" << '\n';
 
-                    if (0 < temp.length && temp.length < bestLength)
-                    {
+                    // if (0 < temp.length && temp.length < bestLength)
+                    // {
                     //     cout << "BEST before: " << bestLength;
                     //     bestLength = temp.length;
                     //     cout << ", BEST after: " << bestLength << '\n';
@@ -265,7 +280,7 @@ SteinerGraph MelzakRecursive(vector<Terminal>& t)
                     //     SteinersToGraphviz(bestGraph);
                     //     TerminalsToGraphviz({X});
                     //     cout << "\n";
-                    }
+                    // }
                     // cout << "----------------------------\n";
                 }
             }
@@ -291,7 +306,7 @@ int main(int argc, char const *argv[])
 
     std::cout << "BESTLength: " << graph.length << "\n";
     // PrintSteiners(graph);
-    // ToGraphviz(terminals, graph);
+    ToGraphviz(terminals, graph);
 
     return 0;
 }
