@@ -2,40 +2,41 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 #include "Point.hpp"
 
-struct SteinerPoint {
+struct SteinerPoint : Terminal
+{
     inline static int counter = 0;
-    std::string id{"S"};
-    double x, y;
-    Point pos;
-    std::vector<std::string> edgesIds;
+    std::vector<std::string> edgesIds{};
+    double edgesLength{};
+    // int edgesNumber{0};
+    // bool IsX{false};
 
-    SteinerPoint() {};
-
-    void SetEqual(Point& p)
+    //создаю свою точку
+    void Create(Point p, char pref, std::vector<std::string> ids)
     {
-        x = p.x;
-        y = p.y;
+        id.append(pref + std::to_string(counter));
+        ++counter;
         pos = p;
+        AddEdgesIds(ids);
+    }
+    //создаю точку из терминала
+    void SetEqual(Terminal& p, char pref, std::vector<std::string> ids)
+    {
+        pos = p.pos;
         edgesIds.push_back(p.id);
-        id.append(p.id);
+        id.append(pref + p.id);
+        AddEdgesIds(ids);
     }
 
-    void AddEdgesIds(std::vector<std::string> edges)
+    void AddEdgesIds(std::vector<std::string> ids)
     {
-        for (auto e : edges)
+        for (auto e : ids)
             edgesIds.push_back(e);
     }
-    void Create(Point p, std::vector<std::string> edges)
-    {
-        id.append(std::to_string(counter));
-        ++counter;
-        x = p.x;
-        y = p.y;
-        pos = p;
-        AddEdgesIds(edges);
-    }
+
+
 };
 
 struct SteinerGraph {
@@ -44,5 +45,3 @@ struct SteinerGraph {
 
     SteinerGraph(double length_) : length(length_){}
 };
-
-

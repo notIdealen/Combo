@@ -9,14 +9,14 @@
 
 using namespace std;
 
-double Dist(const Point& A, const Point& B) {
-    return (A - B).Length();
+double Dist(const Terminal& A, const Terminal& B) {
+    return (A.pos - B.pos).Length();
 }
 
-double AngleAt(Point& Q, Point& W, Point& E)
+double AngleAt(Terminal& Q, Terminal& W, Terminal& E)
 {
-    Point v1 = Q - W;
-    Point v2 = E - W;
+    Point v1 = Q.pos - W.pos;
+    Point v2 = E.pos - W.pos;
     double mul = v1.x * v2.x + v1.y * v2.y;
     double lenV1 = v1.Length();
     double lenV2 = v2.Length();
@@ -24,7 +24,7 @@ double AngleAt(Point& Q, Point& W, Point& E)
     return acos(max(-1.0, min(1.0, mul / (lenV1 * lenV2))));
 }
 
-vector<Point> GetPretendent(Point& A, Point& B)
+vector<Terminal> GetPretendent(Point& A, Point& B)
 {
     Point mid = (A + B) / 2;
     Point dir = B - A;
@@ -32,7 +32,7 @@ vector<Point> GetPretendent(Point& A, Point& B)
     if (len < DELTA_LEN) return {};
     double h = len * SIN_60;
     Point perp = {-dir.y / len * h, dir.x / len * h};
-    return {mid + perp, mid - perp};
+    return {Terminal{mid + perp}, Terminal{mid - perp}};
 }
 
 // Псевдоскалярное произведение (2D cross product)
@@ -56,168 +56,183 @@ bool IsPointOutsideCircle(const Point& A, const Point& B, const Point& X, const 
     return distC2 > R2 + DELTA_LEN;
 }
 
-SteinerGraph FindSteinerOnCircleAmongThreePoints(const Point& A, const Point& B, const Point& C) {
-    // 1. Находим самую длинную сторону
-    double ab = (B - A).Length();
-    double bc = (C - B).Length();
-    double ca = (A - C).Length();
-    
-    Point P1, P2, P3;
+SteinerGraph FindFPointOnCircle(const Terminal& A, const Terminal& B, const Terminal& C) {
+    double ab = (B.pos - A.pos).Length();
+    double bc = (C.pos - B.pos).Length();
+    double ca = (A.pos - C.pos).Length();
+    Terminal P1, P2, P3;
     double maxLen;
     if (ab >= bc && ab >= ca) { P1 = A; P2 = B; P3 = C; maxLen = ab; }
     else if (bc >= ab && bc >= ca) { P1 = B; P2 = C; P3 = A; maxLen = bc; }
     else { P1 = C; P2 = A; P3 = B; maxLen = ca; }
-
-    // if (maxLen < DELTA_LEN) return P1; // вырожденный случай
-    // 2. Строим ВНЕШНИЙ равносторонний треугольник P1-P2-X
-    Point mid = (P1 + P2) * 0.5;
-    Point dir = P2 - P1;
-    // Перпендикуляр (поворот на 90°)
+    Point mid = (P1.pos + P2.pos) * 0.5;
+    Point dir = P2.pos - P1.pos;
     Point perp = {-dir.y, dir.x};
-    double h = maxLen * SQRT_3 * 0.5; // высота равностороннего треугольника
-    // Два кандидата для X
+    double h = maxLen * SQRT_3 * 0.5;
     Point X1 = mid + perp * (h / maxLen);
     Point X2 = mid - perp * (h / maxLen);
-    // auto candidates = ContendingTriangle(P1, P2);
-    // Выбираем тот, что лежит по другую сторону от прямой P1P2, чем P3
-    double cpP3 = CrossProduct(dir, P3 - P1);
-    double cpX1 = CrossProduct(dir, X1 - P1);
+    double cpP3 = CrossProduct(dir, P3.pos - P1.pos);
+    double cpX1 = CrossProduct(dir, X1 - P1.pos);
     Point X = (cpP3 * cpX1 < 0) ? X1 : X2;
-    // 3. Описанная окружность треугольника P1-P2-X
-    // Для равностороннего треугольника центр = центроид, R = L / √3
-    Point O = (P1 + P2 + X) / 3.0;
-    // cout << "Center circle: " << O.x << ' ' << O.y << endl;
+    Point O = (P1.pos + P2.pos + X) / 3.0;
     double R2 = maxLen * maxLen / 3.0;
-    // 4. Пересечение прямой P3->X с окружностью (O, R)
-    // Параметрическое уравнение прямой: P(t) = P3 + t * (X - P3)
-    // Известно, что при t=1 лежит точка X (она на окружности).
-    // Ищем второй корень tS через теорему Виета для квадратного уравнения |P(t)-O|^2 = R2
-    Point V = X - P3;
+    Point V = X - P3.pos;
     double V2 = V.x * V.x + V.y * V.y;
-    Point diff = P3 - O;
+    Point diff = P3.pos - O;
     double diff2 = diff.x * diff.x + diff.y * diff.y;
-    // t1 * t2 = (|P3-O|^2 - R^2) / |V|^2. Поскольку t1 = 1:
     double tS = (diff2 - R2) / V2;
+    
     // 5. Точка Штейнера
-    SteinerPoint sp;
-    sp.Create(Point{P3 + V * tS}, {P1.id, P2.id});
-    SteinerGraph sg{0};
-    sg.length = Dist(P1, {sp.x, sp.y}) + Dist(P2, {sp.x, sp.y}) + Dist(P3, {sp.x, sp.y});
-    sg.sPoints.push_back(sp);
-    //РАССТОЯНИЕ!!!
+    SteinerPoint F;
+
+    F.Create({P3.pos + V * tS}, 'F', {P1.id, P2.id, P3.id});
+
+    SteinerGraph sg{-1};
+    F.edgesLength = Dist(P1, F) + Dist(P2, F) + Dist(P3, F);
+    sg.length = F.edgesLength;
+    // cout << "DIST: " << sg.length << endl;
+    sg.sPoints.push_back(F);
     return sg;
 }
 
-SteinerGraph FindSteinerAmongThreePoints(Point& A, Point& B, Point& C)
+SteinerGraph FindFPoint(Terminal& A, Terminal& B, Terminal& C)
 {
-    SteinerPoint sp;
-    SteinerGraph sg{0};
+    SteinerPoint F;
+    SteinerGraph sg{-1};
+
     if (AngleAt(A, B, C) >= ANGLE_120) 
     { 
-        sp.SetEqual(B); 
-        sg.length = Dist(A, B) + Dist(B, C);
-        sg.sPoints.push_back(sp);
+        if (B.id[0] == 'X') return sg;
+
+        F.SetEqual(B, 'F', {A.id, C.id}); 
+        F.edgesLength = Dist(A, B) + Dist(B, C);
+        sg.length = F.edgesLength;
+        sg.sPoints.push_back(F);
         return sg;
     }
     if (AngleAt(B, A, C) >= ANGLE_120)
-    { 
-        sp.SetEqual(A);
-        sg.length = Dist(A, B) + Dist(A, C);
-        sg.sPoints.push_back(sp);
+    {
+        if (A.id[0] == 'X') return sg;
+
+        F.SetEqual(A, 'F', {B.id, C.id});
+        F.edgesLength = Dist(B, A) + Dist(A, C);
+        sg.length = F.edgesLength;
+        sg.sPoints.push_back(F);
         return sg;
     }
     if (AngleAt(A, C, B) >= ANGLE_120)
     { 
-        sp.SetEqual(C);
-        sg.length = Dist(C, A) + Dist(C, B);
-        sg.sPoints.push_back(sp);
+        if (C.id[0] == 'X') return sg;
+
+        F.SetEqual(C, 'F', {A.id, C.id});
+        F.edgesLength = Dist(A, C) + Dist(C, B);
+        sg.length = F.edgesLength;
+        sg.sPoints.push_back(F);
         return sg;
     }
-    sg = FindSteinerOnCircleAmongThreePoints(A, B, C);
-    //РАССТОЯНИЕ!!!
+
+    sg = FindFPointOnCircle(A, B, C);
     return sg;
 }
+SteinerPoint FindSteinerPoint(Terminal& A, Terminal& B, Terminal& F, Terminal& X) 
+{
+    SteinerPoint S;
 
-SteinerPoint FindSteinerPoint(Point& A, Point& B, Point& S, Point& X) {
-    SteinerPoint sp;
-    // SteinerGraph sg{0};
-    if (AngleAt(A, B, S) >= ANGLE_120) 
-    { 
-        sp.SetEqual(B); 
-        return sp;
+    if (AngleAt(A, B, F) >= ANGLE_120) 
+    {
+        if (B.id[0] == 'X') 
+            return S;
+        S.SetEqual(B, 'S', {A.id, F.id});
+        S.edgesLength = Dist(A, F);
+        return S;
     }
-    if (AngleAt(B, A, S) >= ANGLE_120)
-    { 
-        sp.SetEqual(A);
-        return sp;
+    if (AngleAt(B, A, F) >= ANGLE_120)
+    {
+        if (A.id[0] == 'X') 
+            return S;
+        S.SetEqual(A, 'S', {B.id, F.id});
+        S.edgesLength = Dist(B, F);
+        return S;
+    }
+    if (AngleAt(A, F, B) >= ANGLE_120)
+    {
+        return S;
     }
 
-    double L2 = (B-A).Length2();
+    double L2 = (B.pos-A.pos).Length2();
     // if (L2 < DELTA_LEN) return C;
-    Point O = (A + B + X) / 3.0;  // центр окружности
+    Point O = (A.pos + B.pos + X.pos) / 3.0;  // центр окружности
     double R2 = L2 / 3.0;          // R² = L²/3
     
-    Point V = X - S;
+    Point V = X.pos - F.pos;
     double V2 = V.Length2();
     // if (V2 < DELTA_LEN) return O;
 
-    Point diff = S - O;
+    Point diff = F.pos - O;
     double tS = (diff.Length2() - R2) / V2; // Виета: t₂ = c/a
 
-    sp.Create(Point{S + V * tS}, {A.id, B.id});
-    //РАССТОЯНИЕ!!!
-    return sp;
+    S.Create({F.pos + V * tS}, 'S', {A.id, B.id, F.id});
+    S.edgesLength = Dist(A, B) + Dist(B, F);
+    return S;
 }
 
 // Определить, с какой стороны от прямой AB лежит точка P
 // Возвращает: +1 (слева/против часовой), -1 (справа/по часовой), 0 (на прямой)
-int SideOfLine(const Point& A, const Point& B, const Point& P) {
+int SideOfLine(const Point& A, const Point& B, const Point& P) 
+{
     double cross = CrossProduct(B - A, P - A);
     if (cross > DELTA_LEN) return 1;
     return -1;
 }
 // Проверка: является ли кандидат X ВНЕШНИМ равносторонним треугольником относительно C
-bool IsValidExternalVertex(const Point& A, const Point& B, const Point& C, const Point& X) {
+bool IsValidExternalVertex(const Point& A, const Point& B, const Point& C, const Point& X) 
+{
     int sideC = SideOfLine(A, B, C);
     int sideX = SideOfLine(A, B, X);
     // ✅ Верно, если X и C по РАЗНЫЕ стороны от AB
+    // !!!!!!! а если на линии? мб <= 0
     return (sideC * sideX < 0);
 }
 
-//
+// double recalculateLength(const SteinerGraph& g) {
+//     double total = 0.0;
+//     for (const auto& e : g.edges) {
+//         total += e.weight;
+//     }
+//     return total;
+// }
 
-//
-SteinerGraph MelzakRecursive(vector<Point>& t)
+SteinerGraph MelzakRecursive(vector<Terminal>& t)
 {
-    SteinerGraph sg{0};// привожу к лучшей версии
+    int xCounter = 0;
+    SteinerGraph bestGraph{0};
     int tNumbers = t.size();
-    double minLength = INF;
+    double bestLength = INF;
 
     if (tNumbers == 3)
     {
-        return FindSteinerAmongThreePoints(t[0], t[1], t[2]);;
+        return FindFPoint(t[0], t[1], t[2]);
     }
-    // SteinerPoint::counter = 0;
-
+    
     for (size_t a = 0; a < tNumbers; ++a)
     {
-        Point A = t[a];
-
         for (size_t b = a + 1; b < tNumbers; ++b)
         {
-            Point B = t[b];
-
-            auto pretendents = GetPretendent(A, B);
-            for (Point X : pretendents)
+            Terminal A = t[a];
+            Terminal B = t[b];
+            auto pretendents = GetPretendent(A.pos, B.pos);
+            for (Terminal X : pretendents)
             {
                 for (size_t c = 0; c < tNumbers; ++c)
                 {
                     if (c == a || c == b) continue;
-                    Point C = t[c];
-                    if (!IsValidExternalVertex(A, B, C, X)) continue;
-                    // if (!IsPointOutsideCircle(A, B, X, C)) continue;
-
-                    vector<Point> newTerminals;
+                    Terminal C = t[c];
+                    if (!IsValidExternalVertex(A.pos, B.pos, C.pos, X.pos)) break;//?
+                    if (!IsPointOutsideCircle(A.pos, B.pos, X.pos, C.pos)) break;//?
+                    // if (!IsValidExternalVertex(A.pos, B.pos, C.pos, X.pos)) continue;
+                    // if (!IsPointOutsideCircle(A.pos, B.pos, X.pos, C.pos)) continue;
+                    X.id = "X" + to_string(xCounter++);
+                    vector<Terminal> newTerminals;
                     for (size_t m = 0; m < tNumbers; ++m)
                     {
                         if (m == a || m == b) continue;
@@ -225,45 +240,58 @@ SteinerGraph MelzakRecursive(vector<Point>& t)
                     }
                     newTerminals.push_back(X);
                     auto temp = MelzakRecursive(newTerminals);
-                    
-                    if (temp.length < minLength)
+
+                    SteinerPoint F;//F для X
+                    for (const auto& f : temp.sPoints)
                     {
-                        minLength = temp.length;
-                        sg = temp;
-                        Point S = temp.sPoints[temp.sPoints.size() - 1].pos;
-                        SteinerPoint sp = FindSteinerPoint(A, B, S, X);
-                        sg.sPoints.push_back(sp);
+                        for (size_t i = 0; i < f.edgesIds.size(); ++i)
+                            if (f.edgesIds[i] == X.id) { F = f; break; }
                     }
+
+                    //получить точку штейнера
+                    auto S = FindSteinerPoint(A, B, F, X);
+                    // double currLength = Dist()
+
+                    // cout << "TempLen: " << temp.length << ", bl(" << bestLength << ")" << '\n';
+
+                    if (0 < temp.length && temp.length < bestLength)
+                    {
+                    //     cout << "BEST before: " << bestLength;
+                    //     bestLength = temp.length;
+                    //     cout << ", BEST after: " << bestLength << '\n';
+                    //     temp.sPoints.push_back(F);
+                    //     bestGraph = move(temp);
+
+                    //     SteinersToGraphviz(bestGraph);
+                    //     TerminalsToGraphviz({X});
+                    //     cout << "\n";
+                    }
+                    // cout << "----------------------------\n";
                 }
             }
         }
     }
-
-    return sg;
+    return bestGraph;
 }
 
-SteinerGraph MelzakAlgorithm(vector<Point>& t)
+SteinerGraph MelzakAlgorithm(vector<Terminal>& t)
 {
     if (t.size() <= 1) return {0};
     if (t.size() == 2)
     { 
-        //mb add id like TS == terminal and steiner
-        return SteinerGraph{Dist(t[0], t[1])};
+        return SteinerGraph{Dist(t[0].pos, t[1].pos)};
     }
     return MelzakRecursive(t);
 }
 
 int main(int argc, char const *argv[])
 {
-    vector<Point> terminals = GetTerminals("_in/terminals.txt");
+    vector<Terminal> terminals = GetTerminals("_in/terminals.txt");
     auto graph = MelzakAlgorithm(terminals);
-    // cout << "Min len: " << graph.length << endl;
-    // PrintTerminals(terminals);
-    std::cout << "Length: " << graph.length << "\n";
-    PrintSteiners(graph);
 
-    std::string outPath = "_out/viz.txt";
-    ToGraphviz(outPath, terminals, graph);
+    std::cout << "BESTLength: " << graph.length << "\n";
+    // PrintSteiners(graph);
+    // ToGraphviz(terminals, graph);
 
     return 0;
 }

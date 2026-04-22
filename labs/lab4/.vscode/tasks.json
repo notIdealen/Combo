@@ -35,6 +35,23 @@
             }
         },
         {
+            "label": "DEBUG_main",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/main.cpp",
+                // "${workspaceFolder}/includes/InputParser.cpp",
+                "-o", 
+                "${workspaceFolder}/MDBG.exe",
+            ],
+            "group": {
+                "kind": "build", 
+                "isDefault": true,
+            }
+        },
+        {
             "label": "TEST",
             "type": "shell",
             "command": "g++",

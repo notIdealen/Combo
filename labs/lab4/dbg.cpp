@@ -45,6 +45,9 @@ SteinerPoint FindSteinerPoint(Point& A, Point& B, Point& S, Point& X)
     return sp;
 }
 
+struct Abc {int x{};};
+struct Zxc : Abc {int y{};};
+
 int main() {
     Point A{"T0", 0, 0};
     Point B{"T1", 2, 2};
@@ -54,7 +57,11 @@ int main() {
     auto NS1 = FindSteinerPoint(A, B, S1, X);
     std::cout << "NS1: " << NS1.x << ' ' << NS1.y << std::endl;
     auto NS2 = FindSteinerPoint(A, B, S2, X);
-    std::cout << "NS2: " << NS2.x << ' ' << NS2.y << std::endl;
+    std::cout << "NS1: " << NS2.x << ' ' << NS2.y << std::endl;
     // std::cout << "Edges: " << s.edgesIds[0] << ' ' << s.edgesIds[1] << std::endl;
+
+    Abc a;
+    Zxc z;
+    a = z;
     return 0;
 }

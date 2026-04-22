@@ -8,7 +8,7 @@
             "name": "DBG Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/dbg.exe",
+            "program": "${workspaceFolder}/MDBG.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
