@@ -8,60 +8,40 @@
 
 using namespace std;
 
-double AngleAt(Point& Q, Point& W, Point& E)
+SteinerGraph MelzakRecursive(vector<char>& t)
 {
-    Point v1 = Q - W;
-    Point v2 = E - W;
-    double mul = v1.x * v2.x + v1.y * v2.y;
-    double lenV1 = v1.Length();
-    double lenV2 = v2.Length();
-    if (lenV1 < DELTA_LEN || lenV2 < DELTA_LEN) return PI;
-    return acos(max(-1.0, min(1.0, mul / (lenV1 * lenV2))));
-}
+    std::vector<int> idx{};
+    for (int i = 0; i < t.size(); ++i)
+        idx.push_back(i);
 
-SteinerPoint FindSteinerPoint(Point& A, Point& B, Point& S, Point& X) 
-{
-    SteinerPoint sp;
-    if (AngleAt(A, B, S) >= ANGLE_120) 
-    { 
-        sp.SetEqual(B); 
-        return sp;
-    }
-    if (AngleAt(B, A, S) >= ANGLE_120)
-    { 
-        sp.SetEqual(A);
-        return sp;
-    }
-    double L2 = (B-A).Length2();
-    // if (L2 < DELTA_LEN) return C;
-    Point O = (A + B + X) / 3.0;  // центр окружности
-    double R2 = L2 / 3.0;          // R² = L²/3
-    Point V = X - S;
-    double V2 = V.Length2();
-    // if (V2 < DELTA_LEN) return O;
-    Point diff = S - O;
-    double tS = (diff.Length2() - R2) / V2; // Виета: t₂ = c/a
-    sp.Create(Point{S + V * tS}, {A.id, B.id});
-    return sp;
-}
+    // std::sort(v.begin(), v.end());
+    do
+    {
+        vector<char> temp{};
+        // copy(v.begin()[0], v.end()[0], std::ostream_iterator<size_t>(std::cout, " "));
+        // copy(v.begin(), v.end(), std::ostream_iterator<size_t>(std::cout, " "));
+        // std::cout << '!' << std::endl;
+        for (int i = 0; i < idx.size(); ++i)
+        {
+            temp.push_back(t[idx[i]]);
+        }
 
-struct Abc {int x{};};
-struct Zxc : Abc {int y{};};
+        for (int i = 0; i < idx.size(); ++i)
+        {
+            cout << temp[i] << ' ';
+            // temp[i];
+        }
+        cout << endl;
+
+
+    } while (std::next_permutation(idx.begin(), idx.end()));
+    //     SteinerGraph bestGraph{0};
+}
 
 int main() {
-    Point A{"T0", 0, 0};
-    Point B{"T1", 2, 2};
-    Point S1{"S1", 3, 1};
-    Point S2{"S2", 6, 3};
-    Point X{"F0", -0.732, 2.732};
-    auto NS1 = FindSteinerPoint(A, B, S1, X);
-    std::cout << "NS1: " << NS1.x << ' ' << NS1.y << std::endl;
-    auto NS2 = FindSteinerPoint(A, B, S2, X);
-    std::cout << "NS1: " << NS2.x << ' ' << NS2.y << std::endl;
-    // std::cout << "Edges: " << s.edgesIds[0] << ' ' << s.edgesIds[1] << std::endl;
 
-    Abc a;
-    Zxc z;
-    a = z;
+    vector<char> chs{'q', 'a', 'r', 't'};
+    MelzakRecursive(chs);
+
     return 0;
 }

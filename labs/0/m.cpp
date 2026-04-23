@@ -4,19 +4,22 @@
 #include <vector>
 #include <chrono>
 
+using namespace std;
+
 int main()
 {
-  // std::vector<std::vector<size_t>> v = {
-  //   {1, 2}, 
-  //   {2, 3}, 
-  //   {3, 4}
-  // };
-  std::vector<size_t> v = { 1, 2, 3, 4, 5, 6, 7, 8};
+  std::vector<std::vector<size_t>> v = {
+    {1, 2}, 
+    {2, 3}, 
+    {3, 4}
+  };
+  // std::vector<size_t> v = { 3, 1, 2};
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::sort(v.begin(), v.end());
+    // std::sort(v.begin(), v.end());
     do
     {
+      // std::cout << v.begin()[0] << endl;
         // copy(v.begin()[0], v.end()[0], std::ostream_iterator<size_t>(std::cout, " "));
         copy(v.begin(), v.end(), std::ostream_iterator<size_t>(std::cout, " "));
         std::cout << '!' << std::endl;
