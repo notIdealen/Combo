@@ -72,11 +72,9 @@ void TerminalsToGraphviz(std::vector<Terminal> terminals)
 }
 
 void ToGraphviz(std::vector<Terminal> terminals, SteinerGraph points)
-// std::string ToGraphviz(std::string path, std::vector<Point> terminals, SteinerGraph points)
 {
     std::string nodeSize = "0.4";
-    // std::ofstream out(path);
-     // === ЭКСПОРТ ДЛЯ GRAPHVIZ ===
+    // === ЭКСПОРТ ДЛЯ GRAPHVIZ ===
     std::cout << "graph SteinerTree {" << std::endl;
     std::cout << "    layout=neato; mode=\"major\"; splines=line;" << std::endl;
     // Терминалы
@@ -99,8 +97,7 @@ void ToGraphviz(std::vector<Terminal> terminals, SteinerGraph points)
     {
         const auto& s = points.sPoints[i];
         for (auto edge : s.edgesIds)
-            std::cout << s.id << " -- " << edge << " [penwidth=2];" << std::endl;
+            std::cout << "    " << s.id << " -- " << edge << " [penwidth=2];" << std::endl;
     }
     std::cout << "}" << std::endl;
-    // out.close();
 }

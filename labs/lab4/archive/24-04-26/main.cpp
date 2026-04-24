@@ -245,21 +245,13 @@ void Unwrap(SteinerGraph& graph, vector<Terminal> terminals, SteinerGraph& best)
             graph.length = INF;// or -1
             break;
         }
-        graph.length = S.edgesLength + graph.length - Dist(F, X);
-        // graph.length = S.edgesLength + F.edgesLength - Dist(F, X);
-        // auto new_end_S = std::remove_if(S.edgesIds.begin(), S.edgesIds.end(), [](std::string& id) 
-        // { 
-        //     return id[0] == 'X'; 
-        // });
-        // S.edgesIds.erase(new_end_S, S.edgesIds.end());
-
+        graph.length = S.edgesLength + F.edgesLength - Dist(F, X);
         graph.sPoints.push_back(S);
         if (A.parents[0]) terminals.push_back(A);
         if (B.parents[1]) terminals.push_back(B);
     }
     if (graph.length < best.length)
         best = graph;
-    // SteinersToGraphviz(best);
 }
 
 int xCounter = 0;
@@ -267,6 +259,7 @@ SteinerGraph MelzakRecursive(vector<Terminal>& t, SteinerGraph& best)
 {
     SteinerGraph graph{-1};
     int tNumbers = t.size();
+    // double bestLength = INF;
 
     if (tNumbers == 3)
     {
@@ -299,23 +292,24 @@ SteinerGraph MelzakRecursive(vector<Terminal>& t, SteinerGraph& best)
                     }
                 }
 
-                if (!isValidPretendent) continue;
-                
-                X.id = "X" + to_string(xCounter++);
-                X.parents[0] = std::make_shared<Terminal>(A);
-                X.parents[1] = std::make_shared<Terminal>(B);
-                vector<Terminal> newTerminals;
-                for (size_t m = 0; m < tNumbers; ++m)
+                if (isValidPretendent)
                 {
-                    if (m == a || m == b) continue;
-                    newTerminals.push_back(t[m]);
-                }
-                newTerminals.push_back(X);
-                auto graph = MelzakRecursive(newTerminals, best);
+                    X.id = "X" + to_string(xCounter++);
+                    X.parents[0] = std::make_shared<Terminal>(A);
+                    X.parents[1] = std::make_shared<Terminal>(B);
+                    vector<Terminal> newTerminals;
+                    for (size_t m = 0; m < tNumbers; ++m)
+                    {
+                        if (m == a || m == b) continue;
+                        newTerminals.push_back(t[m]);
+                    }
+                    newTerminals.push_back(X);
+                    auto graph = MelzakRecursive(newTerminals, best);
 
-                if (newTerminals.size() == 3)
-                    Unwrap(graph, newTerminals, best);
-                // cout << "Next set" << endl;
+                    if (newTerminals.size() == 3)
+                        Unwrap(graph, newTerminals, best);
+                    cout << "Next set" << endl;
+                }
             }
         }
     }
@@ -337,7 +331,6 @@ SteinerGraph MelzakAlgorithm(vector<Terminal>& t)
 int main(int argc, char const *argv[])
 {
     vector<Terminal> terminals = GetTerminals("_in/terminals.txt");
-    // TerminalsToGraphviz(terminals);
     auto graph = MelzakAlgorithm(terminals);
 
     std::cout << "BESTLength: " << graph.length << "\n";

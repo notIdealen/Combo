@@ -1,15 +1,12 @@
 #pragma once
 
 #include <cmath>
+#include <array>
+#include <memory>
 #include <string>
 
 struct Point {
-    // std::string id{};
     double x{}, y{};
-
-    // Point() {};
-    // Point(double x_, double y_) : x(x_), y(y_) {}
-    // Point(std::string id_, double x_, double y_) : id(id_), x(x_), y(y_) {}
     
     Point operator+(const Point& p) const { return {x + p.x, y + p.y}; }
     Point operator-(const Point& p) const { return {x - p.x, y - p.y}; }
@@ -24,7 +21,10 @@ struct Terminal
 {
     std::string id{};
     Point pos{};
+    std::array<std::shared_ptr<Terminal>, 2> parents;
+    // bool isX{false};
     Terminal(){}
     Terminal(Point p) : pos{p}{}
     Terminal(std::string id_, Point p) : id{id_}, pos{p}{}
 };
+

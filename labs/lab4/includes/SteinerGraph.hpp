@@ -9,9 +9,7 @@ struct SteinerPoint : Terminal
 {
     inline static int counter = 0;
     std::vector<std::string> edgesIds{};
-    double edgesLength{};
-    // int edgesNumber{0};
-    // bool IsX{false};
+    double edgesLength{-1};
 
     //создаю свою точку
     void Create(Point p, char pref, std::vector<std::string> ids)
