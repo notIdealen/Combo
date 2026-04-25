@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include <cmath>
 #include <array>
 #include <memory>
@@ -21,10 +23,14 @@ struct Terminal
 {
     std::string id{};
     Point pos{};
-    std::array<std::shared_ptr<Terminal>, 2> parents;
-    // bool isX{false};
+    std::vector<Terminal*> parents;
+    // std::vector<Terminal> parents{};
     Terminal(){}
     Terminal(Point p) : pos{p}{}
     Terminal(std::string id_, Point p) : id{id_}, pos{p}{}
 };
 
+// Terminal(const Terminal& other) {
+// std::cerr << "[COPY] Terminal " << id << " with " 
+//             << other.parents.size() << " parents\n";
+// }
