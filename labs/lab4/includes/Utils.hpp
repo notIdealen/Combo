@@ -5,8 +5,7 @@
 #include <fstream>
 #include <string>
 
-#include "Point.hpp"
-#include "SteinerGraph.hpp"
+#include "Structs.hpp"
 
 std::vector<Terminal> GetTerminals(std::string path)
 {   
@@ -35,7 +34,7 @@ void PrintTerminals(std::vector<Terminal>& points)
         std::cout << p.id << ' ' << p.pos.x << ' ' << p.pos.y << std::endl;
     }
 }
-void PrintSteiners(SteinerGraph& points)
+void PrintSteiners(SteinerTree& points)
 {
     for (const SteinerPoint& p : points.sPoints)
     {
@@ -47,7 +46,7 @@ void PrintSteiners(SteinerGraph& points)
     }
 }
 
-void SteinersToGraphviz(SteinerGraph points)
+void SteinersToGraphviz(SteinerTree points)
 {
     std::string nodeSize = "0.4";
     for (size_t i = 0; i < points.sPoints.size(); ++i) {
@@ -71,7 +70,7 @@ void TerminalsToGraphviz(std::vector<Terminal> terminals)
     
 }
 
-void ToGraphviz(std::vector<Terminal> terminals, SteinerGraph points)
+void ToGraphviz(std::vector<Terminal> terminals, SteinerTree points)
 {
     std::string nodeSize = "0.4";
     // === ЭКСПОРТ ДЛЯ GRAPHVIZ ===
@@ -97,7 +96,24 @@ void ToGraphviz(std::vector<Terminal> terminals, SteinerGraph points)
     {
         const auto& s = points.sPoints[i];
         for (auto edge : s.edgesIds)
+        {
+            if (edge[0] == 'X') continue;
             std::cout << "    " << s.id << " -- " << edge << " [penwidth=2];" << std::endl;
+        }
     }
     std::cout << "}" << std::endl;
+}
+
+void PrintTerminals(std::vector<Terminal*>& terminals)
+{
+    for (int t = 0; t < terminals.size(); ++t)
+    {
+        if (t == terminals.size() - 1)
+        {
+            std::cout << terminals[t]->id;
+            continue;
+        }    
+        std::cout << terminals[t]->id << ' ';
+    }
+    std::cout << '\n';
 }

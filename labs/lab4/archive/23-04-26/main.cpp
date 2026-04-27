@@ -75,7 +75,7 @@ bool IsPointOutsideCircle(const Point& A, const Point& B, const Point& X, const 
     return distC2 > R2 + DELTA_LEN;
 }
 
-SteinerGraph FindFPointOnCircle(const Terminal& A, const Terminal& B, const Terminal& C) {
+SteinerTree FindFPointOnCircle(const Terminal& A, const Terminal& B, const Terminal& C) {
     double ab = (B.pos - A.pos).Length();
     double bc = (C.pos - B.pos).Length();
     double ca = (A.pos - C.pos).Length();
@@ -106,7 +106,7 @@ SteinerGraph FindFPointOnCircle(const Terminal& A, const Terminal& B, const Term
 
     F.Create({P3.pos + V * tS}, 'F', {P1.id, P2.id, P3.id});
 
-    SteinerGraph sg{-1};
+    SteinerTree sg{-1};
     F.edgesLength = Dist(P1, F) + Dist(P2, F) + Dist(P3, F);
     sg.length = F.edgesLength;
     // cout << "DIST: " << sg.length << endl;
@@ -114,10 +114,10 @@ SteinerGraph FindFPointOnCircle(const Terminal& A, const Terminal& B, const Term
     return sg;
 }
 
-SteinerGraph FindFPoint(Terminal& A, Terminal& B, Terminal& C)
+SteinerTree FindFPoint(Terminal& A, Terminal& B, Terminal& C)
 {
     SteinerPoint F;
-    SteinerGraph sg{-1};
+    SteinerTree sg{-1};
 // cout << "FindFPoint: " << endl;
     if (AngleAt(A, B, C) >= ANGLE_120 && AngleAt(A, B, C) <= ANGLE_240) 
     { 
@@ -201,9 +201,9 @@ SteinerPoint FindSteinerPoint(Terminal& A, Terminal& B, Terminal& F, Terminal& X
     return S;
 }
 
-SteinerGraph Recursive(vector<Terminal>& t, int& xCounter)
+SteinerTree Recursive(vector<Terminal>& t, int& xCounter)
 {
-    SteinerGraph graph{-1};
+    SteinerTree graph{-1};
     int tNumbers = t.size();
     if (tNumbers == 3)
     {
@@ -274,9 +274,9 @@ SteinerGraph Recursive(vector<Terminal>& t, int& xCounter)
     return graph;
 }
 
-SteinerGraph MelzakAlgorithm(vector<Terminal>& t)
+SteinerTree MelzakAlgorithm(vector<Terminal>& t)
 {
-    SteinerGraph best{INF};
+    SteinerTree best{INF};
     std::vector<int> idx{};
     for (int i = 0; i < t.size(); ++i)
         idx.push_back(i);
@@ -284,7 +284,7 @@ SteinerGraph MelzakAlgorithm(vector<Terminal>& t)
     if (t.size() <= 1) return {0};
     if (t.size() == 2)
     { 
-        return SteinerGraph{Dist(t[0].pos, t[1].pos)};
+        return SteinerTree{Dist(t[0].pos, t[1].pos)};
     }
 
     do

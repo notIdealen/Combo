@@ -9,7 +9,7 @@
 #include "GraphNode.hpp"
 #include "Point.hpp"
 
-struct SteinerGraph {
+struct SteinerTree {
     double totalLength;
     std::vector<GraphNode> nodes;
     std::vector<std::pair<std::string, std::string>> edges; // Рёбра хранятся как пары ID ("ID1", "ID2")

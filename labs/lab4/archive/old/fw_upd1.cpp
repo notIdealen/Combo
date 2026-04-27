@@ -192,7 +192,7 @@ SteinerResult solveSteinerMelzak(const vector<Point>& terminals) {
 
 //222222222222222
 // Вспомогательная функция: добавить узел в граф и вернуть его ID
-string addNode(SteinerGraph& graph, const Point& pos, bool isSteiner) {
+string addNode(SteinerTree& graph, const Point& pos, bool isSteiner) {
     GraphNode node(pos, isSteiner);
     graph.nodes.push_back(node);
     graph.nodeIndex[node.id] = graph.nodes.size() - 1;
@@ -301,8 +301,8 @@ string addNode(SteinerGraph& graph, const Point& pos, bool isSteiner) {
 // }
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Вспомогательная: клонировать граф с заменой одного ID на другой
-SteinerGraph cloneWithReplace(const SteinerGraph& src, const string& oldId, const string& newId) {
-    SteinerGraph result;
+SteinerTree cloneWithReplace(const SteinerTree& src, const string& oldId, const string& newId) {
+    SteinerTree result;
     result.totalLength = src.totalLength;
     
     // Копируем узлы
@@ -320,9 +320,9 @@ SteinerGraph cloneWithReplace(const SteinerGraph& src, const string& oldId, cons
     return result;
 }
 
-SteinerGraph melzakRecursiveGraph(vector<GraphNode> terminals) {
+SteinerTree melzakRecursiveGraph(vector<GraphNode> terminals) {
     int k = terminals.size();
-    SteinerGraph result;
+    SteinerTree result;
     
     // === БАЗОВЫЕ СЛУЧАИ ===
     
@@ -359,7 +359,7 @@ SteinerGraph melzakRecursiveGraph(vector<GraphNode> terminals) {
     }
     
     // === РЕКУРСИВНЫЙ СЛУЧАЙ ===
-    SteinerGraph best;
+    SteinerTree best;
     best.totalLength = INF;
     
     for (int i = 0; i < k; ++i) {
@@ -382,14 +382,14 @@ SteinerGraph melzakRecursiveGraph(vector<GraphNode> terminals) {
                 newTerminals.push_back(pseudo);
                 
                 // Рекурсивный вызов
-                SteinerGraph sub = melzakRecursiveGraph(newTerminals);
+                SteinerTree sub = melzakRecursiveGraph(newTerminals);
                 
                 // Находим реальную точку Штейнера для (A, B, X)
                 Point S = fermatTorricelli(A, B, X);
                 string sId = "S" + to_string(node_counter++);
                 
                 // Клонируем подграф, заменяя псевдо-узел на реальную точку Штейнера
-                SteinerGraph candidate = cloneWithReplace(sub, pseudoId, sId);
+                SteinerTree candidate = cloneWithReplace(sub, pseudoId, sId);
                 
                 // Добавляем саму точку Штейнера
                 GraphNode steiner(S, true);
@@ -436,7 +436,7 @@ int main() {
 
     // 2. Запускаем алгоритм
     node_counter = 0;
-    SteinerGraph graph = melzakRecursiveGraph(terminalNodes);
+    SteinerTree graph = melzakRecursiveGraph(terminalNodes);
 
     // 3. Разделяем узлы на терминалы и точки Штейнера для экспорта
     vector<Point> terminals, steiners;

@@ -108,7 +108,7 @@ bool IsPointOutsideCircle(const Point& A, const Point& B, const Point& X, const 
     return distC2 > R2 + DELTA_LEN;
 }
 
-SteinerGraph FindSteinerOnCircleAmongThreePoints(const Point& A, const Point& B, const Point& C) {
+SteinerTree FindSteinerOnCircleAmongThreePoints(const Point& A, const Point& B, const Point& C) {
     // 1. Находим самую длинную сторону
     double ab = (B - A).Length();
     double bc = (C - B).Length();
@@ -153,17 +153,17 @@ SteinerGraph FindSteinerOnCircleAmongThreePoints(const Point& A, const Point& B,
     // 5. Точка Штейнера
     SteinerPoint sp;
     sp.Create(Point{P3 + V * tS}, {P1.id, P2.id});
-    SteinerGraph sg{0};
+    SteinerTree sg{0};
     sg.length = Dist(P1, {sp.x, sp.y}) + Dist(P2, {sp.x, sp.y}) + Dist(P3, {sp.x, sp.y});
     sg.sPoints.push_back(sp);
     //РАССТОЯНИЕ!!!
     return sg;
 }
 
-SteinerGraph FindSteinerAmongThreePoints(Point& A, Point& B, Point& C)
+SteinerTree FindSteinerAmongThreePoints(Point& A, Point& B, Point& C)
 {
     SteinerPoint sp;
-    SteinerGraph sg{0};
+    SteinerTree sg{0};
     if (AngleAt(A, B, C) >= ANGLE_120) 
     { 
         B.isSteiner = true; sp.SetEqual(B); 
@@ -224,9 +224,9 @@ bool IsValidExternalVertex(const Point& A, const Point& B, const Point& C, const
     return (sideC * sideX < 0);
 }
 
-SteinerGraph MelzakRecursive(vector<Point>& t)
+SteinerTree MelzakRecursive(vector<Point>& t)
 {
-    SteinerGraph sg{0};
+    SteinerTree sg{0};
     int tNumbers = t.size();
 
     if (tNumbers == 3)
@@ -276,7 +276,7 @@ SteinerGraph MelzakRecursive(vector<Point>& t)
     return sg;
 }
 
-SteinerGraph MelzakAlgorithm(vector<Point>& t)
+SteinerTree MelzakAlgorithm(vector<Point>& t)
 {
     if (t.size() <= 1) return {0};
     if (t.size() == 2)
@@ -284,7 +284,7 @@ SteinerGraph MelzakAlgorithm(vector<Point>& t)
         //mb add id like TS == terminal and steiner
         t[0].isSteiner = true;
         t[1].isSteiner = true;
-        return SteinerGraph{Dist(t[0], t[1])};
+        return SteinerTree{Dist(t[0], t[1])};
     }
     return MelzakRecursive(t);
 }

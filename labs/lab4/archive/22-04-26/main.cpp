@@ -74,7 +74,7 @@ bool IsPointOutsideCircle(const Point& A, const Point& B, const Point& X, const 
     return distC2 > R2 + DELTA_LEN;
 }
 
-SteinerGraph FindFPointOnCircle(const Terminal& A, const Terminal& B, const Terminal& C) {
+SteinerTree FindFPointOnCircle(const Terminal& A, const Terminal& B, const Terminal& C) {
     double ab = (B.pos - A.pos).Length();
     double bc = (C.pos - B.pos).Length();
     double ca = (A.pos - C.pos).Length();
@@ -105,7 +105,7 @@ SteinerGraph FindFPointOnCircle(const Terminal& A, const Terminal& B, const Term
 
     F.Create({P3.pos + V * tS}, 'F', {P1.id, P2.id, P3.id});
 
-    SteinerGraph sg{-1};
+    SteinerTree sg{-1};
     F.edgesLength = Dist(P1, F) + Dist(P2, F) + Dist(P3, F);
     sg.length = F.edgesLength;
     // cout << "DIST: " << sg.length << endl;
@@ -113,10 +113,10 @@ SteinerGraph FindFPointOnCircle(const Terminal& A, const Terminal& B, const Term
     return sg;
 }
 
-SteinerGraph FindFPoint(Terminal& A, Terminal& B, Terminal& C)
+SteinerTree FindFPoint(Terminal& A, Terminal& B, Terminal& C)
 {
     SteinerPoint F;
-    SteinerGraph sg{-1};
+    SteinerTree sg{-1};
 
     if (AngleAt(A, B, C) >= ANGLE_120) 
     { 
@@ -200,9 +200,9 @@ SteinerPoint FindSteinerPoint(Terminal& A, Terminal& B, Terminal& F, Terminal& X
 }
 
 int xCounter = 0;
-SteinerGraph MelzakRecursive(vector<Terminal>& t)
+SteinerTree MelzakRecursive(vector<Terminal>& t)
 {
-    SteinerGraph bestGraph{0};
+    SteinerTree bestGraph{0};
     int tNumbers = t.size();
     double bestLength = INF;
 
@@ -281,12 +281,12 @@ SteinerGraph MelzakRecursive(vector<Terminal>& t)
     return bestGraph;
 }
 
-SteinerGraph MelzakAlgorithm(vector<Terminal>& t)
+SteinerTree MelzakAlgorithm(vector<Terminal>& t)
 {
     if (t.size() <= 1) return {0};
     if (t.size() == 2)
     { 
-        return SteinerGraph{Dist(t[0].pos, t[1].pos)};
+        return SteinerTree{Dist(t[0].pos, t[1].pos)};
     }
     return MelzakRecursive(t);
 }

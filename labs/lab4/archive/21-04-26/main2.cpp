@@ -66,7 +66,7 @@ void ShowCoordsAndLength(const Point& A, const Point& B, const Point& C, Point& 
     cout << "len: " << len << '\n';
 }
 
-SteinerGraph FindSteinerOnCircleAmongThreePoints(const Point& A, const Point& B, const Point& C) {
+SteinerTree FindSteinerOnCircleAmongThreePoints(const Point& A, const Point& B, const Point& C) {
     // 1. Находим самую длинную сторону
     double ab = (B - A).Length();
     double bc = (C - B).Length();
@@ -117,17 +117,17 @@ SteinerGraph FindSteinerOnCircleAmongThreePoints(const Point& A, const Point& B,
 
     sp.Create(Point{P3 + V * tS}, ids);
 
-    SteinerGraph sg{0};
+    SteinerTree sg{0};
     sg.length = Dist(P1, {sp.x, sp.y}) + Dist(P2, {sp.x, sp.y}) + Dist(P3, {sp.x, sp.y});
     sg.sPoints.push_back(sp);
     ShowCoordsAndLength(P1, P2, P3, sp.pos, sg.length);/////////////////////////////////////////////////////////////////
     return sg;
 }
 
-SteinerGraph FindSteinerAmongThreePoints(Point& A, Point& B, Point& C)
+SteinerTree FindSteinerAmongThreePoints(Point& A, Point& B, Point& C)
 {
     SteinerPoint sp;
-    SteinerGraph sg{0};
+    SteinerTree sg{0};
 
     vector<std::string> ids;
     for (const auto id : {A.id, B.id, C.id})
@@ -213,9 +213,9 @@ bool IsValidExternalVertex(const Point& A, const Point& B, const Point& C, const
     return (sideC * sideX < 0);
 }
 
-SteinerGraph MelzakRecursive(vector<Point>& t)
+SteinerTree MelzakRecursive(vector<Point>& t)
 {
-    SteinerGraph sg{0};
+    SteinerTree sg{0};
     int tNumbers = t.size();
     double minLength = INF;
 
@@ -274,12 +274,12 @@ SteinerGraph MelzakRecursive(vector<Point>& t)
     return sg;
 }
 
-SteinerGraph MelzakAlgorithm(vector<Point>& t)
+SteinerTree MelzakAlgorithm(vector<Point>& t)
 {
     if (t.size() <= 1) return {0};
     if (t.size() == 2)
     { 
-        return SteinerGraph{Dist(t[0], t[1])};
+        return SteinerTree{Dist(t[0], t[1])};
     }
     return MelzakRecursive(t);
 }

@@ -7,9 +7,11 @@
 
 struct SteinerPoint : Terminal
 {
-    inline static int counter = 0;
+    inline static size_t counter = 0;
     std::vector<std::string> edgesIds{};
     double edgesLength{-1};
+    std::vector<Terminal> neighbors;///////////
+    bool invalid{false};
 
     //создаю свою точку
     void Create(Point p, char pref, std::vector<std::string> ids)
@@ -37,9 +39,9 @@ struct SteinerPoint : Terminal
 
 };
 
-struct SteinerGraph {
+struct SteinerTree {
     double length;
     std::vector<SteinerPoint> sPoints{};
 
-    SteinerGraph(double length_) : length(length_){}
+    SteinerTree(double length_) : length(length_){}
 };

@@ -63,7 +63,7 @@ struct GraphNode {
 //=============================================================================
 //  Граф (результат алгоритма)
 //=============================================================================
-struct SteinerGraph {
+struct SteinerTree {
     double totalLength = 0;
     vector<GraphNode> nodes;
     vector<pair<string, string>> edges;
@@ -143,7 +143,7 @@ Point fermatTorricelli(const Point& A, const Point& B, const Point& C) {
 //=============================================================================
 //  Экспорт в DOT (Graphviz)
 //=============================================================================
-void exportToDot(const string& filename, const SteinerGraph& graph) {
+void exportToDot(const string& filename, const SteinerTree& graph) {
     ofstream out(filename);
     if (!out) { cerr << "Error: cannot write to " << filename << endl; return; }
     
@@ -179,8 +179,8 @@ void exportToDot(const string& filename, const SteinerGraph& graph) {
 //=============================================================================
 
 // Клонировать граф с заменой одного ID на другой
-SteinerGraph cloneWithReplace(const SteinerGraph& src, const string& oldId, const string& newId) {
-    SteinerGraph result;
+SteinerTree cloneWithReplace(const SteinerTree& src, const string& oldId, const string& newId) {
+    SteinerTree result;
     result.totalLength = src.totalLength;
     
     for (const auto& node : src.nodes) {
@@ -199,8 +199,8 @@ SteinerGraph cloneWithReplace(const SteinerGraph& src, const string& oldId, cons
 }
 
 // Удалить все псевдо-узлы из графа
-SteinerGraph removePseudoNodes(SteinerGraph graph) {
-    SteinerGraph result;
+SteinerTree removePseudoNodes(SteinerTree graph) {
+    SteinerTree result;
     result.totalLength = graph.totalLength;
     
     for (const auto& node : graph.nodes) {
@@ -221,12 +221,12 @@ SteinerGraph removePseudoNodes(SteinerGraph graph) {
 //=============================================================================
 //  Алгоритм Мелзака (рекурсивный)
 //=============================================================================
-SteinerGraph melzakRecursive(vector<GraphNode> terminals) {
+SteinerTree melzakRecursive(vector<GraphNode> terminals) {
     int k = static_cast<int>(terminals.size());
     
     // === БАЗОВЫЕ СЛУЧАИ ===
     if (k == 2) {
-        SteinerGraph g;
+        SteinerTree g;
         g.totalLength = dist(terminals[0].pos, terminals[1].pos);
         g.nodes = terminals;
         g.edges.emplace_back(terminals[0].id, terminals[1].id);
@@ -239,7 +239,7 @@ SteinerGraph melzakRecursive(vector<GraphNode> terminals) {
         Point S = fermatTorricelli(A, B, C);
         string sId = "S" + to_string(global_id_counter++);
         
-        SteinerGraph g;
+        SteinerTree g;
         // Добавляем точку Штейнера
         GraphNode steiner(S, true); steiner.id = sId;
         g.nodes.push_back(steiner);
@@ -254,7 +254,7 @@ SteinerGraph melzakRecursive(vector<GraphNode> terminals) {
     }
     
     // === РЕКУРСИВНЫЙ СЛУЧАЙ ===
-    SteinerGraph best;
+    SteinerTree best;
     best.totalLength = INF;
     
     for (int i = 0; i < k; ++i) {
@@ -273,14 +273,14 @@ SteinerGraph melzakRecursive(vector<GraphNode> terminals) {
                 newTerms.push_back(pseudo);
                 
                 // Рекурсивный вызов
-                SteinerGraph sub = melzakRecursive(newTerms);
+                SteinerTree sub = melzakRecursive(newTerms);
                 
                 // Точка Штейнера для (A, B, X)
                 Point S = fermatTorricelli(A, B, X);
                 string sId = "S" + to_string(global_id_counter++);
                 
                 // === СБОРКА НОВОГО ГРАФА "С НУЛЯ" ===
-                SteinerGraph candidate;
+                SteinerTree candidate;
                 
                 // 1. Копируем все узлы из sub, кроме псевдо-узла
                 for (const auto& node : sub.nodes) {
@@ -336,7 +336,7 @@ SteinerGraph melzakRecursive(vector<GraphNode> terminals) {
 //=============================================================================
 //  Основной интерфейс
 //=============================================================================
-SteinerGraph solveSteiner(const vector<Point>& terminalPoints) {
+SteinerTree solveSteiner(const vector<Point>& terminalPoints) {
     global_id_counter = 0;  // сброс счётчика
     
     // Создаём узлы терминалов с уникальными ID
@@ -349,7 +349,7 @@ SteinerGraph solveSteiner(const vector<Point>& terminalPoints) {
     
     if (terminals.empty()) return {};
     if (terminals.size() == 1) {
-        SteinerGraph g;
+        SteinerTree g;
         g.addNodeIfNew(terminals[0]);
         return g;
     }
@@ -369,7 +369,7 @@ int main() {
     
     // === ЗАПУСК АЛГОРИТМА ===
     cout << "\nComputing Steiner tree (Melzak's algorithm)...\n";
-    SteinerGraph result = solveSteiner(terminals);
+    SteinerTree result = solveSteiner(terminals);
     
     // === СТАТИСТИКА ===
     int tCount = 0, sCount = 0;

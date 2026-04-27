@@ -8,8 +8,39 @@
 #include "includes/Const.hpp"
 
 using namespace std;
+////////////////////////////
+// Угол между векторами в радианах [0, π]
+double angleBetween(const Point& u, const Point& v, double eps_len = 1e-9) {
+    double len_u = u.Length();
+    double len_v = v.Length();
+    
+    if (len_u < eps_len || len_v < eps_len) {
+        return 0.0; // Вырожденный вектор → угол не определён
+    }
+    
+    double cos_theta = u.dot(v) / (len_u * len_v);
+    // Защита от NaN из-за погрешности double
+    cos_theta = std::max(-1.0, std::min(1.0, cos_theta));
+    return std::acos(cos_theta);
+}
 
-// Псевдоскалярное произведение (2D cross product)
+// Проверка условия Штейнера: все три угла ≈ 120°
+bool isSteinerPointValid(const Point& S, 
+                         const Point& A, const Point& B, const Point& C,
+                         double angle_eps = 1e-4) { // ~0.0057°
+
+    double ang1 = angleBetween(A - S, B - S);
+    double ang2 = angleBetween(B - S, C - S);
+    double ang3 = angleBetween(C - S, A - S);
+    
+    return (std::abs(ang1 - ANGLE_120) < angle_eps) &&
+           (std::abs(ang2 - ANGLE_120) < angle_eps) &&
+           (std::abs(ang3 - ANGLE_120) < angle_eps);
+}
+///////////////////////////////
+
+
+
 double CrossProduct(const Point& a, const Point& b) {
     return a.x * b.y - a.y * b.x;
 }
@@ -53,22 +84,16 @@ vector<Terminal> GetPretendent(Point& A, Point& B)
     return {Terminal{mid + perp}, Terminal{mid - perp}};
 }
 
-// Проверка: лежит ли точка C ВНЕ описанной окружности равностороннего △ABX
 bool IsPointOutsideCircle(const Point& A, const Point& B, const Point& X, const Point& C) {
-    // Длина стороны равностороннего треугольника
     double L2 = (B - A).Length2();
-    if (L2 < DELTA_LEN) return false;  // вырождение
-    // Центр окружности = центроид равностороннего треугольника
+    if (L2 < DELTA_LEN) return false;
     Point O = (A + B + X) * (1.0 / 3.0);
-    // Квадрат радиуса: R² = L² / 3
     double R2 = L2 / 3.0;
-    // Квадрат расстояния от C до центра
     double distC2 = (C - O).Length2();
-    // C снаружи, если |C-O|² > R² (с запасом на погрешность)
     return distC2 > R2 + DELTA_LEN;
 }
 
-SteinerTree FindFPointOnCircle(const Terminal& A, const Terminal& B, const Terminal& C) {
+SteinerPoint FindFPointInsideTriangle(const Terminal& A, const Terminal& B, const Terminal& C) {
     double ab = (B.pos - A.pos).Length();
     double bc = (C.pos - B.pos).Length();
     double ca = (A.pos - C.pos).Length();
@@ -95,58 +120,52 @@ SteinerTree FindFPointOnCircle(const Terminal& A, const Terminal& B, const Termi
     double tS = (diff2 - R2) / V2;
     // 5. Точка Штейнера
     SteinerPoint F;
-
     F.Create({P3.pos + V * tS}, 'F', {P1.id, P2.id, P3.id});
-
     SteinerTree sg{-1};
     F.edgesLength = Dist(P1, F) + Dist(P2, F) + Dist(P3, F);
-    sg.length = F.edgesLength;
-    sg.sPoints.push_back(F);
-    return sg;
+    return F;
 }
 
-SteinerTree FindFPoint(Terminal& A, Terminal& B, Terminal& C)
+SteinerPoint FindFPointEqualTerminal(Terminal& A, Terminal& B, Terminal& C)
 {
-    SteinerPoint F;
-    SteinerTree sg{-1};
-
-    if (AngleAt(A, B, C) >= ANGLE_120) 
-    { 
-        if (B.id[0] == 'X') return sg;
-        // if (AngleAt(A, B, C) > ANGLE_240) return sg;
-
-        F.SetEqual(B, 'F', {A.id, C.id}); 
-        F.edgesLength = Dist(A, B) + Dist(B, C);
-        sg.length = F.edgesLength;
-        sg.sPoints.push_back(F);
-        return sg;
-    }
-    if (AngleAt(B, A, C) >= ANGLE_120)
-    {
-        if (A.id[0] == 'X') return sg;
-        // if (AngleAt(B, A, C) > ANGLE_240) return sg;
-
-        F.SetEqual(A, 'F', {B.id, C.id});
-        F.edgesLength = Dist(B, A) + Dist(A, C);
-        sg.length = F.edgesLength;
-        sg.sPoints.push_back(F);
-        return sg;
-    }
-    if (AngleAt(A, C, B) >= ANGLE_120)
-    { 
-        if (C.id[0] == 'X') return sg;
-        // if (AngleAt(A, C, B) > ANGLE_240) return sg;
-
-        F.SetEqual(C, 'F', {A.id, C.id});
-        F.edgesLength = Dist(A, C) + Dist(C, B);
-        sg.length = F.edgesLength;
-        sg.sPoints.push_back(F);
-        return sg;
-    }
-
-    sg = FindFPointOnCircle(A, B, C);
-    return sg;
+    SteinerPoint F{};
+    if (B.id[0] == 'X') return F;
+    F.SetEqual(B, 'F', {A.id, C.id}); 
+    F.edgesLength = Dist(A, B) + Dist(B, C);
+    return F;
 }
+
+SteinerPoint FindFPoint(Terminal& A, Terminal& B, Terminal& C)
+{
+    SteinerPoint F{};
+
+    if (AngleAt(A, B, C) >= ANGLE_120)// && AngleAt(A, B, C) <= ANGLE_240) 
+    { 
+        return FindFPointEqualTerminal(A, B, C);
+        // if (B.id[0] == 'X') return F;
+        // F.SetEqual(B, 'F', {A.id, C.id}); 
+        // F.edgesLength = Dist(A, B) + Dist(B, C);
+        // return F;
+    }
+    if (AngleAt(B, A, C) >= ANGLE_120)// && AngleAt(B, A, C) <= ANGLE_240)
+    {
+        return FindFPointEqualTerminal(B, A, C);
+        // if (A.id[0] == 'X') return F;
+        // F.SetEqual(A, 'F', {B.id, C.id});
+        // F.edgesLength = Dist(B, A) + Dist(A, C);
+        // return F;
+    }
+    if (AngleAt(A, C, B) >= ANGLE_120)// && AngleAt(A, C, B) <= ANGLE_240)
+    { 
+        return FindFPointEqualTerminal(A, C, B);
+        // if (C.id[0] == 'X') return F;
+        // F.SetEqual(C, 'F', {A.id, C.id});
+        // F.edgesLength = Dist(A, C) + Dist(C, B);
+        // return F;
+    }
+    return FindFPointInsideTriangle(A, B, C);
+}
+
 SteinerPoint FindSteinerPoint(Terminal& A, Terminal& B, Terminal& F, Terminal& X) 
 {
     SteinerPoint S{};
@@ -157,6 +176,9 @@ SteinerPoint FindSteinerPoint(Terminal& A, Terminal& B, Terminal& F, Terminal& X
         if (AngleAt(A, B, F) > ANGLE_240) return S;
 
         S.SetEqual(B, 'S', {A.id, F.id});
+        
+        // char xxxx; if (S.id == "SST2") xxxx = 'A';
+        
         S.edgesLength = Dist(A, B) + Dist(B, F);
         return S;
     }
@@ -166,22 +188,29 @@ SteinerPoint FindSteinerPoint(Terminal& A, Terminal& B, Terminal& F, Terminal& X
         if (AngleAt(B, A, F) > ANGLE_240) return S;
 
         S.SetEqual(A, 'S', {B.id, F.id});
+        
+        // char xxxx; if (S.id == "SST2") xxxx = 'A';
+        
         S.edgesLength = Dist(B, A) + Dist(A, F);
         return S;
     }
     if (AngleAt(A, F, B) >= ANGLE_120)
     {
+        return S;
         //такого никогда не дудет
         cout << "AngleAt(A, F, B) >= ANGLE_120 Unbelivable\n";
         if (F.id[0] == 'X') return S;
         if (AngleAt(A, F, B) > ANGLE_240) return S;
         S.SetEqual(F, 'S', {A.id, B.id});
+
+        char xxxx; if (S.id == "SST2") xxxx = 'A';
+
         S.edgesLength = Dist(B, F) + Dist(F, A);
         return S;
     }
 
     double L2 = (B.pos-A.pos).Length2();
-    // if (L2 < DELTA_LEN) return C;
+    // if (L2 < DELTA_LEN) return F;
     Point O = (A.pos + B.pos + X.pos) / 3.0;  // центр окружности
     double R2 = L2 / 3.0;          // R² = L²/3
     
@@ -193,41 +222,44 @@ SteinerPoint FindSteinerPoint(Terminal& A, Terminal& B, Terminal& F, Terminal& X
     double tS = (diff.Length2() - R2) / V2; // Виета: t₂ = c/a
 
     S.Create({F.pos + V * tS}, 'S', {A.id, B.id, F.id});
+
+    // char xxxx;
+    // if (S.id == "SST2") xxxx = 'A';
+
     S.edgesLength = Dist(F, X);
     return S;
 }
 
-void Unwrap(SteinerTree& graph, vector<Terminal> terminals, SteinerTree& best)
+SteinerTree Unwrap(SteinerPoint FPoint, vector<Terminal*> terminals)
 {
+    SteinerTree graph{INF};
+    graph.sPoints.push_back(FPoint);
+    graph.length = FPoint.edgesLength;
     while (true)
     {
         bool isBreak = false;
-
-        auto new_end = std::remove_if(terminals.begin(), terminals.end(), [](Terminal& t) 
+        auto new_end = std::remove_if(terminals.begin(), terminals.end(), [](Terminal* t) 
         { 
-            return t.parents[0] == nullptr; 
+            return t->parents.empty(); 
         });
         terminals.erase(new_end, terminals.end());
 
         if (terminals.size() == 0) break;
 
         SteinerPoint F;//F для X по наличию в F id от X
-        Terminal X;
+        Terminal* X;
+        int foundIdx = -1;
         for (size_t i = 0; i < terminals.size(); ++i)
         {
             X = terminals[i];
             for (auto f : graph.sPoints)
             {
                 for (auto id : f.edgesIds)
-                // for (size_t j = 0; j < f.edgesIds.size(); ++j)
                 {
-                    if (id == X.id) 
-                    // if (f.edgesIds[j] == X.id) 
+                    if (id == X->id) 
                     { 
                         F = f; 
-                        auto it = terminals.begin();
-                        terminals.erase(it + i);
-                        // f.edgesIds.erase(it + i);// f тоже имеет потомков, но они не совпадут т.к. в териманалах удалены
+                        foundIdx = i;
                         isBreak= true;
                         break; 
                     }
@@ -236,87 +268,102 @@ void Unwrap(SteinerTree& graph, vector<Terminal> terminals, SteinerTree& best)
             }
             if (isBreak) break;
         }
-        // может прийти X пустой.
-        Terminal A = *X.parents[0];
-        Terminal B = *X.parents[1];
-        SteinerPoint S = FindSteinerPoint(A, B, F, X);
+
+        terminals.erase(terminals.begin() + foundIdx);
+
+        Terminal*& A = X->parents[0];
+        Terminal*& B = X->parents[1];
+        SteinerPoint&& S = FindSteinerPoint(*A, *B, F, *X);
+        // Проверка условия Штейнера: все три угла ≈ 120°
+        // char x; if (S.id == "S1992") x = 'A';
+        // if (S.id[1] != 'T' && !isSteinerPointValid(S.pos, A->pos, B->pos, F.pos))
+        // {
+        //     graph.length = INF;
+        //     break;
+        // }
+
         if (S.edgesLength <= 0) 
         {
-            graph.length = INF;// or -1
+            graph.length = INF;
             break;
         }
-        graph.length = S.edgesLength + F.edgesLength - Dist(F, X);
-        graph.sPoints.push_back(S);
-        if (A.parents[0]) terminals.push_back(A);
-        if (B.parents[1]) terminals.push_back(B);
+        graph.length = graph.length - Dist(F, *X) + S.edgesLength;
+
+        graph.sPoints.push_back(move(S));
+        terminals.push_back(A);
+        terminals.push_back(B);
     }
-    if (graph.length < best.length)
-        best = graph;
+    // for (auto x : graph.sPoints)
+    // {
+    //     if (x.edgesIds.size() == 3)
+    // }
+    return move(graph);
 }
 
 int xCounter = 0;
-SteinerTree MelzakRecursive(vector<Terminal>& t, SteinerTree& best)
+SteinerPoint MelzakRecursive(vector<Terminal*> t, SteinerTree& best)
 {
-    SteinerTree graph{-1};
+    SteinerPoint FPoint;
     int tNumbers = t.size();
-    // double bestLength = INF;
 
     if (tNumbers == 3)
     {
-        return FindFPoint(t[0], t[1], t[2]);
+        return FindFPoint(*t[0], *t[1], *t[2]);
     }
     
     for (size_t a = 0; a < tNumbers; ++a)
     {
         for (size_t b = a + 1; b < tNumbers; ++b)
         {
-            Terminal A = t[a];
-            Terminal B = t[b];
-            auto pretendents = GetPretendent(A.pos, B.pos);
+            auto pretendents = GetPretendent(t[a]->pos, t[b]->pos);
             for (Terminal X : pretendents)
             {
                 bool isValidPretendent = true;
-                for (size_t c = 0; c < tNumbers; ++c)
+                // for (size_t c = 0; c < tNumbers; ++c)
+                // {
+                //     if (c == a || c == b) continue;
+                //     if (!IsValidExternalVertex(t[a]->pos, t[b]->pos, t[c]->pos, X.pos))
+                //     {   
+                //         isValidPretendent = false;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //         // continue;
+                //         break;
+                //     }
+                // //     if (!IsPointOutsideCircle(t[a]->pos, t[b]->pos, X.pos, t[c]->pos))
+                // //     {
+                // //         isValidPretendent = false;
+                // //         break;
+                // //     }
+                // }
+
+                if (!isValidPretendent) continue;
+                
+                X.id = "X" + to_string(xCounter++);
+
+                X.parents.push_back(t[a]);
+                X.parents.push_back(t[b]);
+
+                vector<Terminal*> terminals;
+                for (size_t m = 0; m < tNumbers; ++m)
                 {
-                    if (c == a || c == b) continue;
-                    Terminal C = t[c];
-                    if (!IsValidExternalVertex(A.pos, B.pos, C.pos, X.pos))
-                    {   
-                        isValidPretendent = false;
-                        break;
-                    }
-                    if (!IsPointOutsideCircle(A.pos, B.pos, X.pos, C.pos))
-                    {
-                        isValidPretendent = false;
-                        break;
-                    }
+                    if (m == a || m == b) continue;
+                    terminals.push_back(t[m]);
                 }
-
-                if (isValidPretendent)
+                terminals.push_back(&X);/////////////
+                FPoint = MelzakRecursive(terminals, best);
+                
+                if (terminals.size() == 3 && 0 < FPoint.edgesLength)
                 {
-                    X.id = "X" + to_string(xCounter++);
-                    X.parents[0] = std::make_shared<Terminal>(A);
-                    X.parents[1] = std::make_shared<Terminal>(B);
-                    vector<Terminal> newTerminals;
-                    for (size_t m = 0; m < tNumbers; ++m)
-                    {
-                        if (m == a || m == b) continue;
-                        newTerminals.push_back(t[m]);
-                    }
-                    newTerminals.push_back(X);
-                    auto graph = MelzakRecursive(newTerminals, best);
-
-                    if (newTerminals.size() == 3)
-                        Unwrap(graph, newTerminals, best);
-                    cout << "Next set" << endl;
+                    SteinerTree&& graph = Unwrap(FPoint, terminals);
+                    if (graph.length < best.length)
+                        best = move(graph);
                 }
             }
         }
     }
-    return graph;
+    return FPoint;
 }
 
-SteinerTree MelzakAlgorithm(vector<Terminal>& t)
+SteinerTree MelzakAlgorithm(vector<Terminal> t)
 {
     SteinerTree best{INF};
     if (t.size() <= 1) return {0};
@@ -324,13 +371,17 @@ SteinerTree MelzakAlgorithm(vector<Terminal>& t)
     { 
         return SteinerTree{Dist(t[0].pos, t[1].pos)};
     }
-    MelzakRecursive(t, best);
+    vector<Terminal*> toMelzak;
+    for (Terminal& tp : t)
+        toMelzak.push_back(&tp);
+    MelzakRecursive(toMelzak, best);
     return best;
 }
 
 int main(int argc, char const *argv[])
 {
     vector<Terminal> terminals = GetTerminals("_in/terminals.txt");
+
     auto graph = MelzakAlgorithm(terminals);
 
     std::cout << "BESTLength: " << graph.length << "\n";

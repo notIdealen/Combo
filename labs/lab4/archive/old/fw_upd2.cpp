@@ -29,7 +29,7 @@ struct GraphNode {
     GraphNode(const Point& p, bool steiner) : pos(p), isSteiner(steiner) {}
 };
 
-struct SteinerGraph {
+struct SteinerTree {
     double totalLength;
     std::vector<GraphNode> nodes;
     std::vector<std::pair<std::string, std::string>> edges; // Рёбра хранятся как пары ID ("ID1", "ID2")
@@ -147,7 +147,7 @@ Point fermatTorricelli(const Point& A, const Point& B, const Point& C) {
 }
 // ==================== АЛГОРИТМ МЕЛЗАКА ====================
 // Вспомогательная функция: добавить узел в граф и вернуть его ID
-string addNode(SteinerGraph& graph, const Point& pos, bool isSteiner) {
+string addNode(SteinerTree& graph, const Point& pos, bool isSteiner) {
     GraphNode node(pos, isSteiner);
     graph.nodes.push_back(node);
     graph.nodeIndex[node.id] = graph.nodes.size() - 1;
@@ -155,8 +155,8 @@ string addNode(SteinerGraph& graph, const Point& pos, bool isSteiner) {
 }
 
 // Вспомогательная: клонировать граф с заменой одного ID на другой
-SteinerGraph cloneWithReplace(const SteinerGraph& src, const string& oldId, const string& newId) {
-    SteinerGraph result;
+SteinerTree cloneWithReplace(const SteinerTree& src, const string& oldId, const string& newId) {
+    SteinerTree result;
     result.totalLength = src.totalLength;
     
     // Копируем узлы
@@ -175,7 +175,7 @@ SteinerGraph cloneWithReplace(const SteinerGraph& src, const string& oldId, cons
 }
 
 // Добавить узел в граф, если его ещё нет, вернуть его ID
-string ensureNode(SteinerGraph& graph, const GraphNode& node) {
+string ensureNode(SteinerTree& graph, const GraphNode& node) {
     auto it = graph.nodeIndex.find(node.id);
     if (it == graph.nodeIndex.end()) {
         // Узла с таким ID нет — добавляем
@@ -186,8 +186,8 @@ string ensureNode(SteinerGraph& graph, const GraphNode& node) {
     return node.id;
 }
 // Удалить все псевдо-узлы (с ID, начинающимся на "P")
-SteinerGraph removePseudoNodes(SteinerGraph graph) {
-    SteinerGraph result;
+SteinerTree removePseudoNodes(SteinerTree graph) {
+    SteinerTree result;
     result.totalLength = graph.totalLength;
     
     for (const auto& node : graph.nodes) {
@@ -208,9 +208,9 @@ SteinerGraph removePseudoNodes(SteinerGraph graph) {
     
     return result;
 }
-SteinerGraph melzakRecursiveGraph(vector<GraphNode> terminals) {
+SteinerTree melzakRecursiveGraph(vector<GraphNode> terminals) {
     int k = terminals.size();
-    SteinerGraph result;
+    SteinerTree result;
     
     // === БАЗОВЫЕ СЛУЧАИ ===
     
@@ -247,7 +247,7 @@ SteinerGraph melzakRecursiveGraph(vector<GraphNode> terminals) {
     }
     
     // === РЕКУРСИВНЫЙ СЛУЧАЙ ===
-    SteinerGraph best;
+    SteinerTree best;
     best.totalLength = INF;
     
     for (int i = 0; i < k; ++i) {
@@ -270,14 +270,14 @@ SteinerGraph melzakRecursiveGraph(vector<GraphNode> terminals) {
                 newTerminals.push_back(pseudo);
                 
                 // Рекурсивный вызов
-                SteinerGraph sub = melzakRecursiveGraph(newTerminals);
+                SteinerTree sub = melzakRecursiveGraph(newTerminals);
                 
                 // Находим реальную точку Штейнера для (A, B, X)
                 Point S = fermatTorricelli(A, B, X);
                 string sId = "S" + to_string(node_counter++);
                 
                 // Клонируем подграф, заменяя псевдо-узел на реальную точку Штейнера
-                SteinerGraph candidate = cloneWithReplace(sub, pseudoId, sId);
+                SteinerTree candidate = cloneWithReplace(sub, pseudoId, sId);
                 
                 // Добавляем саму точку Штейнера
                 GraphNode steiner(S, true);
@@ -329,7 +329,7 @@ int main() {
     node_counter = 0;
     
     // Запуск алгоритма
-    SteinerGraph graph = melzakRecursiveGraph(terminalNodes);
+    SteinerTree graph = melzakRecursiveGraph(terminalNodes);
 
     // === ОТЛАДКА: вывод всех узлов ===
     cout << "\n=== All Nodes ===" << endl;
