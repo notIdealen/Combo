@@ -15,7 +15,7 @@ struct Point {
     Point operator*(double k) const { return {x * k, y * k}; }
     Point operator/(double k) const { return {x / k, y / k}; }
     
-    double Length() const { return sqrt(x*x + y*y); }
+    double Length() const { return std::hypot(x, y); }
     double Length2() const { return x*x + y*y; }
 
     double dot(const Point& other) const {
