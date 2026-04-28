@@ -57,8 +57,7 @@
             "command": "g++",
             "args": [
                 "-fdiagnostics-color=always",
-                "${workspaceFolder}/calc_tests.cpp",
-                // "${workspaceFolder}/includes/Calculator.cpp",
+                "${workspaceFolder}/tests.cpp",
                 "-o", 
                 "${workspaceFolder}/TESTS",
                 "-I", "D:/_OOP/labs/catch"

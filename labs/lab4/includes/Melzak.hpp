@@ -3,7 +3,7 @@
 #include <vector>
 #include <set>
 #include <cmath>
-#include <iostream>
+// #include <iostream>
 
 #include "Structs.hpp"
 #include "Const.hpp"
@@ -144,30 +144,24 @@ double CalculateGraphLength(const SteinerTree& graph)
 
 Point ComputeTorricelliPoint(const Point& P1, const Point& P2, const Point& P3) 
 {
-    // 1. Защита от вырожденных случаев
     double d12 = (P2 - P1).Length2();
-    if (d12 < DELTA_LEN * DELTA_LEN) return (P1 + P3) * 0.5; // P1 и P2 совпали
-    // 2. Строим равносторонний треугольник на стороне P1P2
+    if (d12 < DELTA_LEN * DELTA_LEN) return (P1 + P3) * 0.5;
     Point mid = (P1 + P2) * 0.5;
     Point dir = P2 - P1;
     double len = dir.Length();
-    double h = len * SIN_60; // sqrt(3) / 2
-    // Вектор нормали (длина равна len)
+    double h = len * SIN_60;
     Point perp = {-dir.y, dir.x};
     Point Q1 = mid + perp * (h / len);
     Point Q2 = mid - perp * (h / len);
-    // Выбираем вершину, лежащую по другую сторону от прямой P1P2 относительно P3
     double cpP3 = dir.x * (P3.y - P1.y) - dir.y * (P3.x - P1.x);
     double cpQ1 = dir.x * (Q1.y - P1.y) - dir.y * (Q1.x - P1.x);
     Point Q = (cpP3 * cpQ1 < 0) ? Q1 : Q2;
-    // 3. Центр описанной окружности равностороннего треугольника (совпадает с центроидом)
     Point O = (P1 + P2 + Q) * (1.0 / 3.0);
-    double R2 = (P1 - O).Length2(); // = len^2 / 3
-    // 4. Находим точку Торричелли через вторую точку пересечения прямой P3Q и окружности
+    double R2 = (P1 - O).Length2();
     Point W = P3 - O;
     Point V = Q - P3;
     double a = V.Length2();
-    if (a < DELTA_LEN * DELTA_LEN) return O; // P3 совпадает с Q
+    if (a < DELTA_LEN * DELTA_LEN) return O;
     double c = W.Length2() - R2;
     double tF = c / a;
     return P3 + V * tF;
@@ -238,6 +232,8 @@ void RelaxSteinerTree(SteinerTree& graph, int max_iter = 5)
     graph.length = CalculateGraphLength(graph); 
 }
 
+// int64_t unsigned treeCounter = 0;///////////////////////
+
 SteinerTree Unwrap(SteinerPoint FPoint, vector<Terminal*> terminals)
 {
     SteinerTree graph{0};
@@ -299,7 +295,6 @@ SteinerTree Unwrap(SteinerPoint FPoint, vector<Terminal*> terminals)
     return move(graph);
 }
 
-int64_t unsigned treeCounter = 0;
 int64_t xCounter = 0;
 SteinerPoint MelzakRecursive(vector<Terminal*> t, SteinerTree& MST)
 {
@@ -330,14 +325,14 @@ SteinerPoint MelzakRecursive(vector<Terminal*> t, SteinerTree& MST)
                 terminals.push_back(&X);
 
                 FPoint = MelzakRecursive(terminals, MST);
-                ++treeCounter;
+                // ++treeCounter;
                 if (terminals.size() == 3 && 0 < !FPoint.invalid)
                 {
                     SteinerTree&& graph = Unwrap(FPoint, terminals);
                     if (graph.length < MST.length)
                     {
 
-                        std::cout << ">t:" << treeCounter << " c:" << SteinerPoint::counter  << '<' << endl;
+                        // std::cout << ">t:" << treeCounter << " c:" << SteinerPoint::counter  << '<' << endl;
                         MST = move(graph);
                     }
                 }
